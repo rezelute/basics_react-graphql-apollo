@@ -31,46 +31,34 @@ const LaunchType = new GraphQLObjectType({
   }),
 });
 
-// launches cursor
-const LaunchTypeEdge = new GraphQLObjectType({
-  name: "edge",
-  fields: () => ({
-    node: { type: LaunchType },
-    cursor: { type: GraphQLString }
-  }),
-});
-
 // Root query
 const RootQuery = new GraphQLObjectType({
   name: "RootQuery",
   fields: {
 
     launches: {
-      edges: {
-        name: "edges",
-        type: GraphQLList(LaunchTypeEdge),
-        args: {
-          first: {
-            name: "first",
-            type: GraphQLInt,
-          },
-          limit: {
-            name: "limit",
-            type: GraphQLInt,
-          }
+      type: GraphQLList(LaunchType),
+      args: {
+        first: {
+          name: "first",
+          type: GraphQLInt,
         },
-        resolve(pVal, { first = null, limit = null }) {
-          return axios
-            .get(`https://api.spacexdata.com/v3/launches?limit=${limit}&offset=${first}`)
-            .then(res => {
-              // console.log(res.data);
-              return res.data
-            })
-            .catch(e => {
-              console.log(e);
-            });
-        },
-      }
+        limit: {
+          name: "limit",
+          type: GraphQLInt,
+        }
+      },
+      resolve(pVal, {first=null, limit=null}) {
+        return axios
+          .get(`https://api.spacexdata.com/v3/launches?limit=${limit}&offset=${first}`)
+          .then(res => {
+            // console.log(res.data);
+            return res.data;
+          })
+          .catch(e => {
+            console.log(e);
+          });
+      },
     },
 
     launch: {
@@ -93,7 +81,7 @@ const RootQuery = new GraphQLObjectType({
         });
       },
     },
-
+    
     rocket: {
       type: RocketType,
       args: {
