@@ -22,17 +22,17 @@ const LAUNCH_QUERY = gql`
   }
 `;
 
-export default function LaunchDetails({ data }) {
+export default function LaunchDetails({ flightNum }) {
   // if (isNaN(qry_flightNumber)) {
   //   return <p>Loading...</p>;
   // }
 
-  // const { loading, error, data } = useQuery(LAUNCH_QUERY, {
-  //   variables: { flight_number: flightNum },
-  // });
+  const { loading, error, data } = useQuery(LAUNCH_QUERY, {
+    variables: { flight_number: flightNum },
+  });
 
-  // if (loading) return <p>Loading...</p>;
-  // if (error) return <p>Error</p>;
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error</p>;
 
   console.log("data.launch: ", data);
 
@@ -75,13 +75,13 @@ export default function LaunchDetails({ data }) {
   );
 }
 
-LaunchDetails.getInitialProps = async ctx => {
-  const { loading, error, data } = await useQuery(LAUNCH_QUERY, {
-    variables: { flight_number: 1 },
-  });
+// LaunchDetails.getInitialProps = async ctx => {
+//   const { loading, error, data } = await useQuery(LAUNCH_QUERY, {
+//     variables: { flight_number: 1 },
+//   });
 
-  return data;
-};
+//   return data;
+// };
 
 // LaunchDetails.propTypes = {
 //   data: {
