@@ -27,21 +27,36 @@ export default function LaunchDetails({ flightNum }) {
   //   return <p>Loading...</p>;
   // }
 
+  console.log("flightNum === null: ", Number.isNaN(flightNum));
+
   const { loading, error, data } = useQuery(LAUNCH_QUERY, {
     variables: { flight_number: flightNum },
+    skip: Number.isNaN(flightNum),
   });
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error</p>;
 
   console.log("data.launch: ", data);
+  let flightNumber;
+  let launchDate;
+  let launchSuccess;
+  let launchYear;
+  let missionName;
+  let rocketId;
+  let rocketName;
+  let rocketType;
 
-  const flightNumber = data.launch.flight_number;
-  const launchDate = data.launch.launch_date_local;
-  const launchSuccess = data.launch.launch_success;
-  const launchYear = data.launch.launch_year;
-  const missionName = data.launch.mission_name;
-  const { rocket } = data.launch;
+  if (data !== undefined) {
+    flightNumber = data.launch.flight_number;
+    launchDate = data.launch.launch_date_local;
+    launchSuccess = data.launch.launch_success;
+    launchYear = data.launch.launch_year;
+    missionName = data.launch.mission_name;
+    rocketId = data.launch.rocket.rocket_id;
+    rocketName = data.launch.rocket.rocket_name;
+    rocketType = data.launch.rocket.rocket_type;
+  }
 
   return (
     <div>
@@ -66,30 +81,15 @@ export default function LaunchDetails({ flightNum }) {
       </ul>
       <h4 className="my-3">Rocket details:</h4>
       <ul className="list-group">
-        <li className="list-group-item">Rocket ID: {rocket.rocket_id}</li>
-        <li className="list-group-item">Rocket name: {rocket.rocket_name}</li>
-        <li className="list-group-item">Rocket type: {rocket.rocket_type}</li>
+        <li className="list-group-item">Rocket ID: {rocketId}</li>
+        <li className="list-group-item">Rocket name: {rocketName}</li>
+        <li className="list-group-item">Rocket type: {rocketType}</li>
       </ul>
       <hr />
     </div>
   );
 }
 
-// LaunchDetails.getInitialProps = async ctx => {
-//   const { loading, error, data } = await useQuery(LAUNCH_QUERY, {
-//     variables: { flight_number: 1 },
-//   });
-
-//   return data;
-// };
-
-// LaunchDetails.propTypes = {
-//   data: {
-//     launch: {
-
-//     }
-//   },
-// };
-// LaunchDetails.propTypes = {
-//   flightNum: PropTypes.number.isRequired,
-// };
+LaunchDetails.propTypes = {
+  flightNum: PropTypes.number.isRequired,
+};
