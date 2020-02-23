@@ -1,112 +1,55 @@
-const {
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLInt,
-  GraphQLBoolean,
-  GraphQLSchema,
-  GraphQLList,
-} = require("graphql");
-const axios = require("axios");
+const { gql } = require("apollo-server");
 
-// rocket
-const RocketType = new GraphQLObjectType({
-  name: "Rocket",
-  fields: () => ({
-    rocket_id: { type: GraphQLString },
-    rocket_name: { type: GraphQLString },
-    rocket_type: { type: GraphQLString },
-  }),
-});
+const typeDefs = gql`
+  type Rocket {
+    rocket_id: String
+    rocket_name: String
+    rocket_type: String
+  }
 
-// launches
-const LaunchType = new GraphQLObjectType({
-  name: "Launch",
-  fields: () => ({
-    flight_number: { type: GraphQLInt },
-    mission_name: { type: GraphQLString },
-    launch_year: { type: GraphQLString },
-    launch_date_local: { type: GraphQLString },
-    launch_success: { type: GraphQLBoolean },
-    rocket: { type: RocketType },
-  }),
-});
+  type Edge {
+    cursor: String!
+    node: Launch!
+  }
+  type PageInfo {
+    endCursor: String
+    hasNextPage: Boolean!
+  }
 
-// launches cursor
-const LaunchTypeEdge = new GraphQLObjectType({
-  name: "edge",
-  fields: () => ({
-    node: { type: LaunchType },
-    cursor: { type: GraphQLString }
-  }),
-});
+  type LaunchesResultCursor {
+    edges: [Edge]!
+    pageInfo: PageInfo
+    totalCount: Int
+  }
 
-// Root query
-const RootQuery = new GraphQLObjectType({
-  name: "RootQuery",
-  fields: {
+  type Launch {
+    """
+    Flight number description
+    Each flight has a unique flight number
+    """
+    flight_id: String
+    flight_number: Int
+    mission_name: String
+    launch_year: String
+    launch_date_local: String
+    launch_success: Boolean
+    rocket: Rocket
+  }
 
-    launches: {
-      edges: {
-        name: "edges",
-        type: GraphQLList(LaunchTypeEdge),
-        args: {
-          first: {
-            name: "first",
-            type: GraphQLInt,
-          },
-          limit: {
-            name: "limit",
-            type: GraphQLInt,
-          }
-        },
-        resolve(pVal, { first = null, limit = null }) {
-          return axios
-            .get(`https://api.spacexdata.com/v3/launches?limit=${limit}&offset=${first}`)
-            .then(res => {
-              // console.log(res.data);
-              return res.data
-            })
-            .catch(e => {
-              console.log(e);
-            });
-        },
-      }
-    },
+  # The "Query" type is special: it lists all of the available queries that
+  # clients can execute, along with the return type for each.
+  type Query {
+    launches: [Launch]
+    launchesCursor(after: String!, first: Int!): LaunchesResultCursor
+    launch: Launch
+    rockets: [Rocket]
+    rocket: Rocket
+  }
 
-    launch: {
-      type: LaunchType,
-      args: {
-        flight_number: { type: GraphQLInt },
-      },
-      resolve(pVal, args) {
-        return axios
-          .get(`https://api.spacexdata.com/v3/launches/${args.flight_number}`)
-          .then(res => res.data);
-      },
-    },
+  # Mutation to modify the books array
+  # type Mutation {
+  #   # addBook(title: String!, authorName: String!): Book
+  # }
+`;
 
-    rockets: {
-      type: GraphQLList(RocketType),
-      resolve(pVal, args) {
-        return axios.get("https://api.spacexdata.com/v3/rockets").then(res => {
-          return res.data;
-        });
-      },
-    },
-
-    rocket: {
-      type: RocketType,
-      args: {
-        id: { type: GraphQLInt },
-      },
-      resolve(pVal, args) {
-        return axios.get(`https://api.spacexdata.com/v3/rockets/${args.id}`).then(res => res.data);
-      },
-    },
-  },
-});
-
-// export
-module.exports = new GraphQLSchema({
-  query: RootQuery,
-});
+module.exports = typeDefs;
